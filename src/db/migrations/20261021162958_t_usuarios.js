@@ -8,7 +8,7 @@ exports.up = async function (knex) {
     t.string("apellidos", 100).notNullable();
     t.string("nombres", 100).notNullable();
     t.string("telefono", 9);
-    t.string("email", 120);
+    t.string("email", 120).notNullable();
     t.string("direccion", 150);
     // Fecha de creacion y modificacion
     t.timestamps(true, true);
