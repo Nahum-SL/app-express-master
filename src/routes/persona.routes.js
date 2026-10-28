@@ -1,9 +1,10 @@
 const router = require("express").Router();
-const { route } = require(".");
-// CONTROLLER
-const c = require("../controllers/persona.controller"); // Controlador gestiona PERMISO
-// MIDDLEWARES
+
+const c = require("../controllers/persona.controller");
 const { verifyToken } = require("../middlewares/auth");
+
+// Todas las rutas requieren un token válido
+router.use(verifyToken);
 
 router.get("/", c.list);
 router.get("/:id", c.get);

@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
   }
 
   // Realiza una busqueda, devolviendo la primera coincidencia
-  const user = await db("usuario").where({ nombre_usuario }).first();
+  const user = await db("usuarios").where({ nombre_usuario }).first();
 
   const valid = await bcrypt.compare(
     clave_acceso,
@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
     {
       id: user.id,
       nombre_usuario: user.nombre_usuario,
-      nivel_acceso: user.user.nivel_acceso,
+      nivel_acceso: user.nivel_acceso,
     },
     process.env.JWT_SECRET,
     {
@@ -61,13 +61,15 @@ exports.logout = async (req, res) => {
 
 // Funcion que retorne la informacion completa del usuario
 // usuario > persona
+
 exports.me = async (req, res) => {
-  if (!req.auth) {
+  if (!req.auth?.id) {
+    throw httpError(401, "No autenticado");
   }
 
   const user = await db("usuarios as u")
     .join("personas as p", "p.id", "u.idpersona")
-    .where("u.id", req.user.id)
+    .where("u.id", req.auth.id)
     .select(
       "u.id",
       "u.nombre_usuario",
@@ -78,9 +80,8 @@ exports.me = async (req, res) => {
     .first();
 
   if (!user) {
-    throw httpError(401, "Usuario no encontrado");
+    throw httpError(404, "Usuario no encontrado");
   }
 
-  // Si existe envio los datos como JSON
   res.json(user);
 };

@@ -1,19 +1,17 @@
-// Validacion de variables de configuracion
-const required = ["DB_HOST", "DB_USER", "DB_NAME", "JWT_SCRET"];
+const required = ["DB_HOST", "DB_USER", "DB_NAME", "JWT_SECRET"];
 
-// Verificamos si una de las claves no existe o esta vacia
+// Verificar variables faltantes o vacías
 const missing = required.filter((key) => !process.env[key]);
 
-// Si no encontre una de las claves ..
 if (missing.length) {
-  console.error(`faltan env: ${missing.join(".")}`);
+  console.error(`Faltan variables de entorno: ${missing.join(", ")}`);
   process.exit(1);
 }
 
-// Para encriptar la comunicacion. JWT necesita como minimo 32 caracteres
+// Validar secreto JWT
 const secret = process.env.JWT_SECRET;
 
-if (secret.lenght < 32) {
-  console.error("JSON_SECRET requiere una clave con 32 caracteres");
+if (secret.length < 32) {
+  console.error("JWT_SECRET requiere una clave de al menos 32 caracteres");
   process.exit(1);
 }
