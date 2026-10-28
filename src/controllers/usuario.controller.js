@@ -27,7 +27,7 @@ const checkNivel = (nivel) => {
   }
 };
 
-exports.get = async (req, res) => {
+exports.getList = async (req, res) => {
   const row = res.json(await baseQuery().where("u.id", req.params.id).first());
   if (!row) throw httpError(404, "Usuario no existe");
   res.json(row);
@@ -62,7 +62,10 @@ exports.create = async (req, res) => {
   res.status(201).json({ id, message: "Usuario creado" });
 };
 
-exports.update = async (req, res) => {};
+
+exports.update = async (req, res) => {
+
+};
 
 exports.delete = async (req, res) => {
   // ¿Es posible eliminar tu propio usuario?
