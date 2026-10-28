@@ -62,9 +62,34 @@ exports.create = async (req, res) => {
   res.status(201).json({ id, message: "Usuario creado" });
 };
 
-
 exports.update = async (req, res) => {
+  // Validacion
+  requireFields(req.body, ["idpersona", "nombre_usuario"]);
+  // Deserializacion
+  const { idpersona, nombre_usuario, clave_acceso, nivel_acceso, estado } =
+    req.body;
+  // Validacion nivel acceso
+  checkNivel(nivel_acceso);
+  checkCredentials(req.body, { claveObligatoria: false });
+  // idepersona FK ... los otros campos se evaluan en las siguientes lineas
+  const data = { idpersona, nombre_usuario };
+  // Actualizando el objeto "data" con el nivel_acceso que ingresa
+  if (nivel_acceso) {
+    data.nivel_acceso = nivel_acceso;
+  }
+  if (estado !== undefined) {
+    data.estado = estado;
+  }
+  if (clave_acceso) {
+    data.clave_acceso = await bcrypt.hash(clave_acceso, 10);
+  }
 
+  const num = await db("usuarios").where({ id: req.params.id }).update(data);
+  if (!num) {
+    throw httpError(404, "Usuario no existe");
+  }
+
+  res.json({ message: "Usuario actualizado" });
 };
 
 exports.delete = async (req, res) => {
