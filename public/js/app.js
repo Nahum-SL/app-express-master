@@ -50,4 +50,12 @@ async function iniciar() {
   }
 }
 
+async function cerrarSesion() {
+  await llamarApi("/api/auth/logout", "POST");
+  window.location.href = "/login.html";
+}
+
+// Manejadores de eventos
+document.getElementById("logout").addEventListener("click", cerrarSesion);
+
 iniciar();
