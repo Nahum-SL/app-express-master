@@ -22,13 +22,24 @@ if (process.env.TRUST_PROXY)
 
 //Configuración de seguridad
 //Cross-Site Scripting (XSS)
+
+/**
+ * DIRECTIVAS (archivos locales)
+ * styleSrc   (CSS)
+ * scriptSrc  (JS)
+ * connectSrc (map)
+ */
+
 app.use(
   helmet({
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
-        "style-src": ["'self'"],
-        "upgrade-insecure-request": isProd ? [] : null,
+        defaultSrc: ["'self'"],
+        connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
+        scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+        styleSrc: ["'self'", "https://cdn.jsdelivr.net"],
+        upgradeInsecureRequests: isProd ? [] : null,
       },
     },
   }),

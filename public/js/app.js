@@ -131,13 +131,80 @@ async function cargarPersonas() {
 }
 
 function abrirFormularioPersonas(persona) {
-  alert(`${persona.apellidos} ${persona.nombres}`);
+  if (persona) {
+    idPersonaEditando = persona.id;
+    dialgoTitel.textContent = "Editar persona";
+
+    document.getElementById("apellidos").value = persona.apellidos;
+    document.getElementById("nombres").value = persona.nombres;
+    document.getElementById("telefono").value = persona.telefono;
+    document.getElementById("email").value = persona.email;
+    document.getElementById("direccion").value = persona.direccion;
+  } else {
+    idPersonaEditando = null;
+    dialgoTitel.textContent = "Nueva persona";
+  }
+
+  const modal = bootstrap.Modal.getOrCreateInstance(
+    document.getElementById("dialogPersona"),
+  );
+
+  modal.show();
 }
 
-function eliminarPersona(id) {
-  alert(id);
+async function eliminarPersona(id) {
+  if (!confirm("¿Eliminamos esta persona?")) {
+    return;
+  }
+
+  try {
+    await llamarApi(`/api/personas/${id}`, "DELETE");
+    await cargarPersonas();
+  } catch (error) {
+    alert(error.message);
+  }
 }
+
+// Se ejecutara desde el submit requeridos el event para detenerlo
+async function guardarPersona(event) {
+  event.preventDefault();
+
+  const error = document.getElementById("errorPersona");
+  error.textContent = "";
+
+  const datos = {
+    apellidos: document.getElementById("apellidos").value.trim(),
+    nombres: document.getElementById("nombres").value.trim(),
+    telefono: document.getElementById("telefono").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    direccion: document.getElementById("direccion").value.trim(),
+  };
+
+  try {
+    if (idPersonaEditando !== null) {
+      await llamarApi(`/api/personas/${idPersonaEditando}`, "PUT", datos);
+    } else {
+      await llamarApi("/api/personas", "POST", datos);
+    }
+
+    bootstrap.Modal.getOrCreateInstance(
+      document.getElementById("dialogPersona"),
+    ).hide();
+
+    await cargarPersonas();
+  } catch (error) {
+    document.getElementById("errorPersona").textContent = error.message;
+  }
+}
+
 // Manejadores de eventos
 document.getElementById("logout").addEventListener("click", cerrarSesion);
+document.getElementById("nuevaPersona").addEventListener("click", function () {
+  abrirFormularioPersonas(null);
+});
+
+document
+  .getElementById("formPersona")
+  .addEventListener("submit", guardarPersona);
 
 iniciar();
