@@ -7,6 +7,6 @@ const { loginLimiter } = require("../middlewares/rateLimit");
 
 router.post("/login", loginLimiter, login);
 router.post("/logout", logout);
-// route.get("/me", verifyToken, me);
+route.get("/me", verifyToken, me);
 
 module.exports = router;
