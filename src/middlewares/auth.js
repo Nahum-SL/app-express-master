@@ -19,14 +19,14 @@ exports.verifyToken = async (req, res, next) => {
     return unauthorized(res);
   }
 
-  let payload = jwt.JwtPayload | String;
+  let payload;
 
   try {
-    payload = jwt.verify(token, process.env.JWT_SCRET, {
+    payload = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ["HS256"],
     });
   } catch (error) {
-    return unauthorized(res, "Sesion ya invalida o expirado");
+    return unauthorized(res, "Sesión inválida o expirada");
   }
 
   // Se consulta la BD para respetar usuarios desactivaos

@@ -1,12 +1,16 @@
 const router = require("express").Router();
-// CONTROLLER
-const { login, logout, me } = require("../controllers/auth.controller"); // Controlador gestiona PERMISO
-// MIDDLEWARES
+const c = require("../controllers/auth.controller"); //Controlador gestiona PERMISO
 const { verifyToken } = require("../middlewares/auth");
 const { loginLimiter } = require("../middlewares/rateLimit");
 
-router.post("/login", loginLimiter, login);
-router.post("/logout", logout);
-route.get("/me", verifyToken, me);
+//¿En un Login, qué verbo debemos utilizar?
+//POST (enviamos un paquete, protección)
+
+//router.verbo('/ruta', controlador.accion)
+//router.verbo('/ruta', token, controlador.accion)
+
+router.post("/login", loginLimiter, c.login);
+router.post("/logout", c.logout);
+router.get("/me", verifyToken, c.me);
 
 module.exports = router;

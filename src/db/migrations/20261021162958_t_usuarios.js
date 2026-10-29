@@ -22,13 +22,11 @@ exports.up = async function (knex) {
       .references("id")
       .inTable("personas")
       .onDelete("RESTRICT");
-
     t.string("nombre_usuario", 50).notNullable().unique();
     t.string("clave_acceso", 255).notNullable();
-    t.enu("nivel_acceso", ["admin", "usuario"])
+    t.enum("nivel_acceso", ["ADMIN", "USUARIO"])
       .notNullable()
-      .defaultTo("usuario");
-
+      .defaultTo("USUARIO");
     t.boolean("estado").notNullable().defaultTo(true);
     t.timestamps(true, true);
   });

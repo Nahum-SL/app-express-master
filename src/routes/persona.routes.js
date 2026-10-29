@@ -1,13 +1,15 @@
 const router = require("express").Router();
-
 const c = require("../controllers/persona.controller");
 
-// Todas las rutas requieren un token válido
+//RECUERDA:
+//Las rutas requieren las funcionalidades en los controladores
 
-router.get("/", c.list);
-router.get("/:id", c.get);
-router.post("/", c.create);
-router.put("/:id", c.update);
-router.delete("/:id", c.remove);
+//router.verbo('/ruta', controlador.accion)
+
+router.get("/", c.list); //listar
+router.get("/:id", c.get); //buscar
+router.post("/", c.create); //registrar
+router.put("/:id", c.update); //modificar
+router.delete("/:id", c.remove); //eliminar
 
 module.exports = router;

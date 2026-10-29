@@ -1,11 +1,12 @@
+//Usuario = accede al app
 const bcrypt = require("bcryptjs");
 const db = require("../config/db");
 const { httpError, requireFields, checkCredentials } = require("../utils");
 
-// Perfiles o roles de usuarios
-const NIVELES = ["admin", "usuario"];
+//Perfile o roles de usuario
+const NIVELES = ["ADMIN", "USUARIO"];
 
-// Consultar base
+//Consulta base
 const baseQuery = () => {
   db("usuarios as u")
     .join("personas as p", "p.id", "u.idpersona")
@@ -20,37 +21,42 @@ const baseQuery = () => {
     );
 };
 
-// Verificar nivel (asegurar que solo sea un perfil de la lista)
+//Verificar nivel (asegurar que solo sea un perfil de la lista)
 const checkNivel = (nivel) => {
+  //Si la variable no está definida AND no encontré el nivel en el arreglo
   if (nivel !== undefined && !NIVELES.includes(nivel)) {
-    throw httpError(400, "Nivel de acceso incorrecto");
+    throw httpError(400, `Nivel de acceso incorrecto`);
   }
 };
 
-exports.getList = async (req, res) => {
-  const row = res.json(await baseQuery().where("u.id", req.params.id).first());
+//Listar
+exports.list = async (req, res) => {
+  res.json(await baseQuery().orderBy("u.id"));
+};
+
+//Buscar por ID
+exports.get = async (req, res) => {
+  const row = await baseQuery().where("u.id", req.params.id).first();
   if (!row) throw httpError(404, "Usuario no existe");
   res.json(row);
 };
 
-exports.get = async (req, res) => {
-  res.json(await baseQuery().orderBy("u.id"));
-};
-
+//Registrar
 exports.create = async (req, res) => {
+  //Validación, campos obligatorios
   requireFields(req.body, ["idpersona", "nombre_usuario", "clave_acceso"]);
 
-  // Deserializar los datos que vienen en body
+  //Deserealizar los datos que vienen en body
   const { idpersona, nombre_usuario, clave_acceso, nivel_acceso, estado } =
     req.body;
 
-  // Verificar que el nivel sea correcto
+  //Verificar que el nivel sea correcto
   checkNivel(nivel_acceso);
 
-  //Verificar credencial (permiso)
+  //Verificar credencial (permiso -> un usuario identificado puede crear a otro usuario)
   checkCredentials(req.body, { claveObligatoria: true });
 
-  // Creamos el usuario
+  //Creamos al usuario
   const [id] = await db("usuarios").insert({
     idpersona,
     nombre_usuario,
@@ -62,29 +68,37 @@ exports.create = async (req, res) => {
   res.status(201).json({ id, message: "Usuario creado" });
 };
 
+//Actualizar
 exports.update = async (req, res) => {
-  // Validacion
+  //Validación
   requireFields(req.body, ["idpersona", "nombre_usuario"]);
-  // Deserializacion
+
+  //Deserialización
   const { idpersona, nombre_usuario, clave_acceso, nivel_acceso, estado } =
     req.body;
-  // Validacion nivel acceso
+
+  //Validación nivel acceso
   checkNivel(nivel_acceso);
   checkCredentials(req.body, { claveObligatoria: false });
-  // idepersona FK ... los otros campos se evaluan en las siguientes lineas
+
+  //idpersona FK ... los otros campos se evalúan en las siguientes líneas
   const data = { idpersona, nombre_usuario };
-  // Actualizando el objeto "data" con el nivel_acceso que ingresa
+
+  //Actualizando el objeto "data" con el nivel_acceso que ingresa
   if (nivel_acceso) {
     data.nivel_acceso = nivel_acceso;
   }
   if (estado !== undefined) {
-    data.estado = estado;
-  }
+    data.estado = !!estado;
+  } //! = Convertimos el valor a lógico, !! = invertir el valor
   if (clave_acceso) {
     data.clave_acceso = await bcrypt.hash(clave_acceso, 10);
   }
 
+  //¿Por qué se utiliza req.params?
+  //El ID viene en la URL => http://localhost:3000/api/usuarios/5
   const num = await db("usuarios").where({ id: req.params.id }).update(data);
+
   if (!num) {
     throw httpError(404, "Usuario no existe");
   }
@@ -92,16 +106,17 @@ exports.update = async (req, res) => {
   res.json({ message: "Usuario actualizado" });
 };
 
-exports.delete = async (req, res) => {
-  // ¿Es posible eliminar tu propio usuario?
-  // SI [] - NO [X]
+//NOTA: Verifique las políticas de seguridad y reglas de negocio
+//Eliminar
+exports.remove = async (req, res) => {
+  //¿Es posible eliminar tu propio usuario?
+  //SI - NO [X]
   if (Number(req.params.id) === req.user.id) {
-    throw httpError(400, "No puedes eliminar tu propio ");
+    throw httpError(400, "No puedes eliminar tu propio usuario");
   }
 
   const num = await db("usuarios").where({ id: req.params.id }).del();
 
-  if (!num) throw httpError(404, "Usuario no encontrada");
-
+  if (!num) throw httpError(404, "Usuario no existe");
   res.json({ message: "Usuario eliminado" });
 };
